@@ -1,5 +1,6 @@
 import { getAudioContext, playBufferAt } from './audio-context'
 import { loadManifest, resolvePosition } from './manifest'
+import { calculateEffectiveStart } from './playback-utils'
 
 const bufferCache = new Map<string, AudioBuffer>()
 
@@ -20,10 +21,7 @@ export async function playStatic(page: number, click: number, resumeFromSec?: nu
 
   const { file, startSec, endSec } = position
   const audioBuffer = await loadFile(file)
-  // resume from the saved position if it falls within this section, otherwise start from the beginning
-  const effectiveStart = (resumeFromSec !== undefined && resumeFromSec > startSec && (endSec === null || resumeFromSec < endSec))
-    ? resumeFromSec
-    : startSec
+  const effectiveStart = calculateEffectiveStart(resumeFromSec, startSec, endSec)
   await playBufferAt(audioBuffer, effectiveStart, endSec)
 }
 

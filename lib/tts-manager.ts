@@ -3,6 +3,8 @@ import { loadAudio, saveAudio, deleteByPrefix } from './idb-cache'
 import { playStatic, prefetchStatic } from './static-loader'
 import { getAudioContext, playBufferAt } from './audio-context'
 import { buildSsml } from './ssml-builder'
+import { calculateEffectiveStart } from './playback-utils'
+import { getCloudTtsApiKey } from './env'
 import { LOG_TAG as TAG } from './constants'
 import type { TtsAddonConfig } from '../types'
 
@@ -27,7 +29,8 @@ export async function play(
 ): Promise<void> {
   // --- pre-generated mode ---
   // fall back to on-demand if config is empty (headmatter unavailable) but an API key exists
-  const apiKeyAvailable = !!(import.meta as any).env?.VITE_CLOUD_TTS_API_KEY
+  const apiKey = getCloudTtsApiKey()
+  const apiKeyAvailable = !!apiKey
   const usePregenerated = config.usePregenerated !== false && !(!Object.keys(config).length && apiKeyAvailable)
   if (usePregenerated) {
     console.log(`${TAG} [static] slide ${page}, click ${click}${resumeFromSec !== undefined ? ` (resume: ${resumeFromSec.toFixed(2)}s)` : ''}`)
@@ -36,7 +39,6 @@ export async function play(
   }
 
   // --- on-demand mode (per slide) ---
-  const apiKey = (import.meta as any).env?.VITE_CLOUD_TTS_API_KEY
   if (!apiKey) {
     console.error(`${TAG} VITE_CLOUD_TTS_API_KEY is not set`)
     return
@@ -111,10 +113,7 @@ export async function play(
   const idx = allTimes.indexOf(startSec)
   const endSec = allTimes[idx + 1] ?? null
 
-  // resume from the saved position if it falls within this section, otherwise start from the beginning
-  const effectiveStart = (resumeFromSec !== undefined && resumeFromSec > startSec && (endSec === null || resumeFromSec < endSec))
-    ? resumeFromSec
-    : startSec
+  const effectiveStart = calculateEffectiveStart(resumeFromSec, startSec, endSec)
 
   console.log(`${TAG} [on-demand] playing slide ${page}, click ${click} (${effectiveStart.toFixed(2)}s ~ ${endSec ?? 'EOF'}s)`)
   await playBufferAt(audioBuffer, effectiveStart, endSec)
