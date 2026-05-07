@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.5](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.4...v0.0.5) - 2026-05-07
+- fix: update permissions to allow GitHub Pages deployment by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/10
+
 ## [v0.0.4](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.3...v0.0.4) - 2026-05-07
 - fix: add missing step to install dependencies in release workflow by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/8
 
