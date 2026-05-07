@@ -1,0 +1,55 @@
+{
+  "name": "@katzumi/slidev-addon-tts",
+  "version": "v0.0.1",
+  "description": "Slidev addon to read aloud speaker notes via Google Cloud Text-to-Speech API",
+  "engines": {
+    "node": ">=22.0.0",
+    "slidev": ">=0.49.0"
+  },
+  "keywords": [
+    "slidev",
+    "slidev-addon",
+    "tts",
+    "google-cloud-tts"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "./index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/k2tzumi/slidev-addon-tts.git"
+  },
+  "scripts": {
+    "build": "slidev build example.md",
+    "dev": "slidev example.md",
+    "export": "slidev export example.md",
+    "screenshot": "slidev export example.md --format png",
+    "publish": "slidev build --base /$(REPOSITORY) --out docs example.md",
+    "build:tts": "tsx scripts/generate-tts.ts --slides example.md",
+    "build:tts:force": "tsx scripts/generate-tts.ts --force --slides example.md"
+  },
+  "bin": {
+    "slidev-addon-tts": "./scripts/generate-tts.ts"
+  },
+  "devDependencies": {
+    "@slidev/cli": "^52.15.0",
+    "@types/node": "^22.0.0"
+  },
+  "dependencies": {
+    "@slidev/theme-default": "^0.25.0",
+    "tsx": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@slidev/client": ">=0.49.0",
+    "@slidev/types": ">=0.49.0",
+    "vue": ">=3.0.0"
+  },
+  "slidev": {
+    "components": "./components",
+    "layouts": false
+  },
+  "bugs": {
+    "url": "https://github.com/k2tzumi/slidev-addon-tts/issues"
+  },
+  "homepage": "https://github.com/k2tzumi/slidev-addon-tts#readme"
+}
