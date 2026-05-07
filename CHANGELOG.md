@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.3](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.2...v0.0.3) - 2026-05-07
+- refactor: replace magic numbers with constants for TTS configuration by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/6
+
 ## [v0.0.2](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.1...v0.0.2) - 2026-05-07
 - feat: add environment configuration and playback utility functions by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/4
 
