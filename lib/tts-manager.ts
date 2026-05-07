@@ -5,7 +5,7 @@ import { getAudioContext, playBufferAt } from './audio-context'
 import { buildSsml } from './ssml-builder'
 import { calculateEffectiveStart } from './playback-utils'
 import { getCloudTtsApiKey } from './env'
-import { LOG_TAG as TAG } from './constants'
+import { LOG_TAG as TAG, DEFAULT_CLICK_BREAK_TIME, DEFAULT_VOICE_NAME, DEFAULT_LANGUAGE_CODE } from './constants'
 import type { TtsAddonConfig } from '../types'
 
 /** Compute a short hash of text to detect note changes for cache invalidation. */
@@ -44,9 +44,9 @@ export async function play(
     return
   }
 
-  const breakTime = config.clickBreakTime ?? '500ms'
-  const voiceName = config.voiceName ?? 'ja-JP-Neural2-B'
-  const languageCode = config.languageCode ?? 'ja-JP'
+  const breakTime = config.clickBreakTime ?? DEFAULT_CLICK_BREAK_TIME
+  const voiceName = config.voiceName ?? DEFAULT_VOICE_NAME
+  const languageCode = config.languageCode ?? DEFAULT_LANGUAGE_CODE
   const allText = sections.join('\n')
   const cacheKey = `cloud-${page}-${textHash(allText)}`
 
