@@ -19,6 +19,7 @@ jobs:
     permissions:
       contents: write # Upload Release assets
       id-token: write
+      pages: write
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
