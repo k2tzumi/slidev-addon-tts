@@ -81,6 +81,9 @@ jobs:
           TTS_LANG: ja-JP
           TTS_BREAK_TIME: 500ms
         run: npm run build:tts
+      - name: Enable pre-generated TTS mode for publishing
+        run: |
+          sed -i 's/usePregenerated: false/usePregenerated: true/' example.md
       - run: npm run publish
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
