@@ -1,0 +1,92 @@
+name: Upload Release assets and npm publish.
+on:
+  # dispatch from tagpr.yml workflow
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        required: false
+        default: 'v.0.0.0'
+        description: 'Specify release tag'
+jobs:
+  npm-publish-job:
+    name: Upload Release assets and npm publish.
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    # Sets permissions of the GITHUB_TOKEN to allow deployment
+    permissions:
+      contents: write # Upload Release assets
+      id-token: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@katzumi'
+      - name: Fix package.json version (strip v-prefix added by tagpr)
+        run: npm pkg fix
+      - run: npm pack
+      - name: Get assets file name
+        id: get-assets-file-name
+        run: |
+          assets=$(npm pack --json | jq -r '.[0].filename' | sed 's/^$//')
+          echo "packFile=${assets}" >> $GITHUB_OUTPUT
+      - name: Upload Release Asset
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const release = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: context.payload.inputs.tag
+            });
+            const packFile = '${{ steps.get-assets-file-name.outputs.packFile }}';
+            const filePath = path.join(path.resolve(process.env.GITHUB_WORKSPACE), packFile);
+            const fileContent = fs.readFileSync(filePath);
+            await github.rest.repos.uploadReleaseAsset({
+              url: release.data.upload_url,
+              headers: {
+                'content-type': 'application/octet-stream',
+                'content-length': fileContent.length,
+              },
+              name: packFile,
+              data: fileContent,
+            });
+      - name: Verify npm authentication
+        run: npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: npm publish
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        continue-on-error: true
+
+      - name: Generate TTS audio (OGG Opus + manifest.json)
+        if: ${{ env.VITE_CLOUD_TTS_API_KEY != '' }}
+        env:
+          VITE_CLOUD_TTS_API_KEY: ${{ secrets.CLOUD_TTS_API_KEY }}
+          TTS_VOICE: ja-JP-Neural2-B
+          TTS_LANG: ja-JP
+          TTS_BREAK_TIME: 500ms
+        run: npm run build:tts
+      - run: npm run publish
+      - name: Setup Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
+        with:
+          # Upload entire repository
+          path: './docs/.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
