@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.4](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.3...v0.0.4) - 2026-05-07
+- fix: add missing step to install dependencies in release workflow by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/8
+
 ## [v0.0.3](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.2...v0.0.3) - 2026-05-07
 - refactor: replace magic numbers with constants for TTS configuration by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/6
 
