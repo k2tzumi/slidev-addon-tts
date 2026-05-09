@@ -42,3 +42,8 @@ publish:
 clean: ## Delete slide
 clean:
 	rm -rf example-export example-export.pdf dist
+
+.PHONY: tts
+tts: ## Generate TTS audio files
+tts: node_modules slides.md
+	npx slidev-addon-tts $(if $(wildcard public/tts/*),--force,)
