@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.10](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.9...v0.0.10) - 2026-05-09
+- fix: normalize BASE_URL trailing slash for tts asset paths by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/20
+
 ## [v0.0.9](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.8...v0.0.9) - 2026-05-09
 - fix: restore play button visibility in production builds and after errors by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/18
 
