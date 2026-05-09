@@ -24,9 +24,24 @@ export function usePlaybackController(nav: any, config: TtsAddonConfig, isTtsEna
   let stopInfo: StopInfo | null = null
 
   function getSections(page: number): string[] {
-    const raw = (slides.value[page - 1]?.meta as any)?.slide?.note
-    if (!raw) return []
-    return raw.split(/\[click\]/i).map((s: string) => s.trim()).filter(Boolean)
+    const slideInfo = (slides.value[page - 1]?.meta as any)?.slide
+    const raw: string | undefined = slideInfo?.note
+
+    // In production builds Slidev strips the raw note (meta.slide.note = "").
+    // Fall back to noteHTML to count [click] boundaries so hasCurrentNotes and
+    // the play-loop guard remain correct.
+    if (raw) {
+      return raw.split(/\[click\]/i).map((s: string) => s.trim()).filter(Boolean)
+    }
+
+    const noteHTML: string | undefined = slideInfo?.noteHTML
+    if (!noteHTML) return []
+
+    // Count click markers injected by Slidev's note renderer.
+    const clickCount = (noteHTML.match(/class="slidev-note-click-mark"/g) ?? []).length
+    // Return one placeholder per section (0..clickCount).
+    // Pregenerated mode ignores section content; on-demand mode has raw note available.
+    return Array.from({ length: clickCount + 1 }, () => 'pregenerated')
   }
 
   const hasCurrentNotes = computed(() => {
@@ -70,16 +85,18 @@ export function usePlaybackController(nav: any, config: TtsAddonConfig, isTtsEna
         ? stopInfo.positionSec
         : undefined
       stopInfo = null
+      let playFailed = false
       try {
         console.log(`${LOG_TAG} requestPlay slide ${target.page}, click ${target.click}${resumeFromSec !== undefined ? ` (resume: ${resumeFromSec.toFixed(2)}s)` : ''}`)
         await play(target.page, target.click, sections, config, resumeFromSec)
       } catch (err) {
         console.error(`${LOG_TAG} play error:`, err)
+        playFailed = true
       } finally {
         isPlaying.value = false
       }
 
-      if (stoppedByUser) {
+      if (stoppedByUser || playFailed) {
         audioState.value = 'idle'
         stoppedByUser = false
         break
