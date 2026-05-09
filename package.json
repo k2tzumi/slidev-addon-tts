@@ -28,6 +28,7 @@
     "build:tts": "tsx scripts/generate-tts.ts --slides example.md",
     "build:tts:force": "tsx scripts/generate-tts.ts --force --slides example.md",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest"
   },
   "bin": {
@@ -36,6 +37,7 @@
   "devDependencies": {
     "@slidev/cli": "^52.15.0",
     "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^4.1.5",
     "vitest": "^4.1.5"
   },
   "dependencies": {

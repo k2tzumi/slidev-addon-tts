@@ -48,6 +48,11 @@ test: ## Run unit tests
 test: node_modules
 	npm test
 
+.PHONY: coverage
+coverage: ## Run unit tests with coverage report
+coverage: node_modules
+	npm run test:coverage
+
 .PHONY: tts
 tts: ## Generate TTS audio files
 tts: node_modules slides.md
