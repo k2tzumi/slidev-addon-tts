@@ -4,7 +4,6 @@ coverage:
 
 report:
   if: is_pull_request
-  comment: true
 
 push:
   if: is_default_branch
