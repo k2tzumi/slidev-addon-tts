@@ -95,14 +95,49 @@ function extractLastComment(block: string): string {
   return matches.length > 0 ? matches[matches.length - 1][1].trim() : ''
 }
 
+/**
+ * Replace `---` lines that appear inside fenced code blocks with a placeholder
+ * so that the subsequent split(/^---$/m) only fires on actual slide separators.
+ */
+function maskCodeFenceSeparators(md: string): string {
+  const PLACEHOLDER = '\x00FENCE_SEP\x00'
+  const lines = md.split('\n')
+  let inFence = false
+  let fenceChar = ''
+  let fenceLen = 0
+  const out: string[] = []
+
+  for (const line of lines) {
+    if (!inFence) {
+      const m = line.match(/^(`{3,}|~{3,})/)
+      if (m) {
+        inFence = true
+        fenceChar = m[1][0]
+        fenceLen = m[1].length
+      }
+      out.push(line)
+    } else {
+      const m = line.match(/^(`{3,}|~{3,})\s*$/)
+      if (m && m[1][0] === fenceChar && m[1].length >= fenceLen) {
+        inFence = false
+      }
+      out.push(line === '---' ? PLACEHOLDER : line)
+    }
+  }
+  return out.join('\n')
+}
+
 function parseSlides(md: string): SlideNote[] {
-  const parts = md.split(/^---$/m)
+  const PLACEHOLDER = '\x00FENCE_SEP\x00'
+  const masked = maskCodeFenceSeparators(md)
+  const parts = masked.split(/^---$/m)
+  const unmask = (s: string) => s.replace(new RegExp(PLACEHOLDER, 'g'), '---')
   const result: SlideNote[] = []
   let page = 0
 
   // parts[0] = before global FM (empty), parts[1] = global FM, parts[2]+ = slides
   for (let i = 2; i < parts.length; i++) {
-    const block = parts[i]
+    const block = unmask(parts[i])
 
     // skip slide-specific FM blocks (do not count as a page)
     if (isSlideSpecificFrontmatter(block)) continue
