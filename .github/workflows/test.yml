@@ -10,7 +10,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      actions: read
+      actions: write
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: ${{ github.event_name == 'pull_request' }}
