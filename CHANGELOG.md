@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.6](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.5...v0.0.6) - 2026-05-09
+- Add tss command by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/12
+
 ## [v0.0.5](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.4...v0.0.5) - 2026-05-07
 - fix: update permissions to allow GitHub Pages deployment by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/10
 
