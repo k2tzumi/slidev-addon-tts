@@ -43,6 +43,11 @@ clean: ## Delete slide
 clean:
 	rm -rf example-export example-export.pdf dist
 
+.PHONY: test
+test: ## Run unit tests
+test: node_modules
+	npm test
+
 .PHONY: tts
 tts: ## Generate TTS audio files
 tts: node_modules slides.md

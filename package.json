@@ -26,14 +26,17 @@
     "screenshot": "slidev export example.md --format png",
     "publish": "slidev build --base /$REPOSITORY --out docs example.md",
     "build:tts": "tsx scripts/generate-tts.ts --slides example.md",
-    "build:tts:force": "tsx scripts/generate-tts.ts --force --slides example.md"
+    "build:tts:force": "tsx scripts/generate-tts.ts --force --slides example.md",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "bin": {
     "slidev-addon-tts": "./scripts/generate-tts.ts"
   },
   "devDependencies": {
     "@slidev/cli": "^52.15.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "vitest": "^4.1.5"
   },
   "dependencies": {
     "@slidev/theme-default": "^0.25.0",
