@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.12](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.11...v0.0.12) - 2026-05-09
+- fix: ignore --- inside code fences when splitting slides by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/24
+
 ## [v0.0.11](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.10...v0.0.11) - 2026-05-09
 - feat: add ffmpeg setup step to release workflow by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/22
 
