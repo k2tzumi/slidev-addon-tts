@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.7](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.6...v0.0.7) - 2026-05-09
+- Fix publish env by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/14
+
 ## [v0.0.6](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.5...v0.0.6) - 2026-05-09
 - Add tss command by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/12
 
