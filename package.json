@@ -24,7 +24,7 @@
     "dev": "slidev example.md",
     "export": "slidev export example.md",
     "screenshot": "slidev export example.md --format png",
-    "publish": "slidev build --base /$(REPOSITORY) --out docs example.md",
+    "publish": "slidev build --base /$REPOSITORY --out docs example.md",
     "build:tts": "tsx scripts/generate-tts.ts --slides example.md",
     "build:tts:force": "tsx scripts/generate-tts.ts --force --slides example.md"
   },
