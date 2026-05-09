@@ -73,14 +73,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         continue-on-error: true
-
+      - uses: FedericoCarboni/setup-ffmpeg@v3
+        with:
+          ffmpeg-version: release
+          github-token: ${{ github.token }}
       - name: Generate TTS audio (OGG Opus + manifest.json)
         if: ${{ env.VITE_CLOUD_TTS_API_KEY != '' }}
         env:
           VITE_CLOUD_TTS_API_KEY: ${{ secrets.CLOUD_TTS_API_KEY }}
-          TTS_VOICE: ja-JP-Neural2-B
-          TTS_LANG: ja-JP
-          TTS_BREAK_TIME: 500ms
         run: npm run build:tts
       - name: Enable pre-generated TTS mode for publishing
         run: |
