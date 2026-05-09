@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.8](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.7...v0.0.8) - 2026-05-09
+- fix: use BASE_URL for tts asset paths to support non-root deployments by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/16
+
 ## [v0.0.7](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.6...v0.0.7) - 2026-05-09
 - Fix publish env by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/14
 
