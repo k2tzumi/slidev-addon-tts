@@ -1,11 +1,13 @@
 #!/usr/bin/env tsx
-import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from 'fs'
-import { resolve, join } from 'path'
-import { execFileSync, execSync } from 'child_process'
-import { tmpdir } from 'os'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from 'node:fs'
+import { resolve, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { execFileSync, execSync } from 'node:child_process'
+import { tmpdir } from 'node:os'
 import dotenv from 'dotenv'
 import { buildSsml } from '../lib/ssml-builder.js'
-import type { SlideNote } from '../lib/ssml-builder.js'
+import { parseFrontmatterTtsConfig, parseSlides } from '../lib/slides-parser.js'
+import type { SlideNote } from '../lib/slides-parser.js'
 import type { TtsManifest, TtsSlideEntry } from '../lib/manifest.js'
 import type { CloudTtsResponse } from '../lib/cloud-tts-client.js'
 
@@ -21,28 +23,6 @@ const SLIDES_FILE = slidesArg
 const OUTPUT_DIR  = resolve(process.cwd(), 'public/tts')
 const API_KEY     = process.env.VITE_CLOUD_TTS_API_KEY
 const FORCE       = process.argv.includes('--force')
-
-// -------- frontmatter ttsConfig extraction --------
-function parseFrontmatterTtsConfig(filePath: string): { voiceName?: string; languageCode?: string; clickBreakTime?: string } {
-  try {
-    const md = readFileSync(filePath, 'utf-8')
-    const parts = md.split(/^---$/m)
-    if (parts.length < 2) return {}
-    const fm = parts[1]
-    const block = fm.match(/^ttsConfig:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
-    const get = (key: string) => block.match(new RegExp(`^\\s+${key}:\\s*["']?([^"'\\n]+)["']?`, 'm'))?.[1]?.trim()
-    return { voiceName: get('voiceName'), languageCode: get('languageCode'), clickBreakTime: get('clickBreakTime') }
-  } catch {
-    return {}
-  }
-}
-
-const fmConfig   = parseFrontmatterTtsConfig(SLIDES_FILE)
-const VOICE      = process.env.TTS_VOICE      ?? fmConfig.voiceName      ?? 'ja-JP-Neural2-B'
-const LANG       = process.env.TTS_LANG       ?? fmConfig.languageCode   ?? 'ja-JP'
-const BREAK_TIME = process.env.TTS_BREAK_TIME ?? fmConfig.clickBreakTime ?? '500ms'
-
-if (!API_KEY) { console.error('❌ VITE_CLOUD_TTS_API_KEY is not set (define it in .env.local or .env)'); process.exit(1) }
 
 // -------- ffmpeg detection --------
 function isFfmpegAvailable(): boolean {
@@ -64,104 +44,15 @@ function wavToOggOpus(wavBuffer: Buffer, outPath: string): void {
   }
 }
 
-// -------- slides.md parsing --------
-
-/**
- * Determine whether a block is a slide-specific frontmatter (layout:, transition:, etc.).
- * In Slidev, YAML blocks delimited by --- serve both as slide boundaries and slide-specific FM,
- * so FM blocks must be excluded from the page count.
- *
- * Heuristic: treat the block as FM when it contains no HTML comments, Markdown headings,
- * code fences, or HTML tags, and every non-empty line looks like a YAML key: value pair.
- */
-function isSlideSpecificFrontmatter(block: string): boolean {
-  const trimmed = block.trim()
-  if (!trimmed) return false
-  if (trimmed.includes('<!--')) return false     // contains HTML comment (speaker note) → slide body
-  if (/^#{1,6}\s/m.test(trimmed)) return false   // contains Markdown heading → slide body
-  if (/^```/m.test(trimmed)) return false         // contains code fence → slide body
-  if (/^<[a-zA-Z]/m.test(trimmed)) return false  // contains HTML/Vue component → slide body
-  if (/^\|/m.test(trimmed)) return false          // contains table → slide body
-
-  // treat as FM if every non-empty line matches YAML key: value
-  const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean)
-  return lines.length > 0 && lines.every(l => /^[\w-]+\s*:/.test(l) || /^\s/.test(l))
-}
-
-function extractLastComment(block: string): string {
-  // strip fenced code blocks before searching for HTML comments
-  const withoutCodeBlocks = block.replace(/```[\s\S]*?```/g, '')
-  const matches = [...withoutCodeBlocks.matchAll(/<!--([\s\S]*?)-->/g)]
-  return matches.length > 0 ? matches[matches.length - 1][1].trim() : ''
-}
-
-/**
- * Replace `---` lines that appear inside fenced code blocks with a placeholder
- * so that the subsequent split(/^---$/m) only fires on actual slide separators.
- */
-function maskCodeFenceSeparators(md: string): string {
-  const PLACEHOLDER = '\x00FENCE_SEP\x00'
-  const lines = md.split('\n')
-  let inFence = false
-  let fenceChar = ''
-  let fenceLen = 0
-  const out: string[] = []
-
-  for (const line of lines) {
-    if (!inFence) {
-      const m = line.match(/^(`{3,}|~{3,})/)
-      if (m) {
-        inFence = true
-        fenceChar = m[1][0]
-        fenceLen = m[1].length
-      }
-      out.push(line)
-    } else {
-      const m = line.match(/^(`{3,}|~{3,})\s*$/)
-      if (m && m[1][0] === fenceChar && m[1].length >= fenceLen) {
-        inFence = false
-      }
-      out.push(line === '---' ? PLACEHOLDER : line)
-    }
-  }
-  return out.join('\n')
-}
-
-function parseSlides(md: string): SlideNote[] {
-  const PLACEHOLDER = '\x00FENCE_SEP\x00'
-  const masked = maskCodeFenceSeparators(md)
-  const parts = masked.split(/^---$/m)
-  const unmask = (s: string) => s.replace(new RegExp(PLACEHOLDER, 'g'), '---')
-  const result: SlideNote[] = []
-  let page = 0
-
-  // parts[0] = before global FM (empty), parts[1] = global FM, parts[2]+ = slides
-  for (let i = 2; i < parts.length; i++) {
-    const block = unmask(parts[i])
-
-    // skip slide-specific FM blocks (do not count as a page)
-    if (isSlideSpecificFrontmatter(block)) continue
-
-    page++
-    const raw = extractLastComment(block)
-    if (!raw) continue  // no notes — skip (page is already counted)
-
-    const sections = raw.split(/\[click\]/i).map(s => s.trim()).filter(Boolean)
-    if (sections.length > 0) result.push({ page, sections })
-  }
-
-  return result
-}
-
 // -------- batch splitting by byte size --------
-// Returns SlideNote[][] (not SsmlBuildResult[]) so buildBatchSlideEntries can access per-slide sections.
-function splitIntoBatches(slides: SlideNote[], maxBytes = 4500): SlideNote[][] {
+// Returns SlideNote[][] so buildBatchSlideEntries can access per-slide sections.
+function splitIntoBatches(slides: SlideNote[], breakTime: string, maxBytes = 4500): SlideNote[][] {
   const batches: SlideNote[][] = []
   let current: SlideNote[] = []
   let currentBytes = 0
 
   for (const slide of slides) {
-    const { ssml } = buildSsml([slide], BREAK_TIME)
+    const { ssml } = buildSsml([slide], breakTime)
     const bytes = Buffer.byteLength(ssml, 'utf-8')
     if (current.length > 0 && currentBytes + bytes > maxBytes) {
       batches.push(current)
@@ -179,9 +70,8 @@ function splitIntoBatches(slides: SlideNote[], maxBytes = 4500): SlideNote[][] {
 const MAX_RETRIES = 5
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 
-async function callCloudTTS(ssml: string): Promise<CloudTtsResponse> {
-  if (!API_KEY) throw new Error('VITE_CLOUD_TTS_API_KEY is not set')
-  const url = `https://texttospeech.googleapis.com/v1beta1/text:synthesize?key=${API_KEY}`
+async function callCloudTTS(ssml: string, apiKey: string, lang: string, voice: string): Promise<CloudTtsResponse> {
+  const url = `https://texttospeech.googleapis.com/v1beta1/text:synthesize?key=${apiKey}`
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     const res = await fetch(url, {
@@ -189,7 +79,7 @@ async function callCloudTTS(ssml: string): Promise<CloudTtsResponse> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         input: { ssml },
-        voice: { languageCode: LANG, name: VOICE },
+        voice: { languageCode: lang, name: voice },
         audioConfig: { audioEncoding: 'LINEAR16', sampleRateHertz: 24000 },
         enableTimePointing: ['SSML_MARK'],
       }),
@@ -215,7 +105,7 @@ async function callCloudTTS(ssml: string): Promise<CloudTtsResponse> {
   throw new Error(`Cloud TTS API: exceeded MAX_RETRIES (${MAX_RETRIES})`)
 }
 
-function parseRetryDelay(errorBody: string): number | null {
+export function parseRetryDelay(errorBody: string): number | null {
   try {
     const json = JSON.parse(errorBody)
     const retryInfo = json?.error?.details?.find(
@@ -229,9 +119,7 @@ function parseRetryDelay(errorBody: string): number | null {
 }
 
 // -------- timepoints → manifest slide entry conversion --------
-// pre-calculate start/end from all timepoints in the batch and write to manifest.
-// at load time, simply read slides[page].clicks[click].start/.end directly.
-function buildBatchSlideEntries(
+export function buildBatchSlideEntries(
   batchSlides: SlideNote[],
   timepoints: CloudTtsResponse['timepoints'],
   audioFile: string,
@@ -241,7 +129,6 @@ function buildBatchSlideEntries(
     timemap[markName] = timeSeconds
   }
 
-  // sort all timepoints in the batch ascending for end-time calculation
   const allStarts = Object.values(timemap).sort((a, b) => a - b)
   const nextTime = (start: number): number | null => {
     const idx = allStarts.indexOf(start)
@@ -265,12 +152,12 @@ function buildBatchSlideEntries(
     entries[String(page)] = { file: audioFile, clicks }
   }
 
-  return entries  // { "8": { file: "batch-1.ogg", clicks: { "0": {start,end}, ... } }, ... }
+  return entries
 }
 
 // -------- load existing manifest.json (preserved when skipping) --------
-function loadExistingManifest(): TtsManifest {
-  const manifestPath = resolve(OUTPUT_DIR, 'manifest.json')
+function loadExistingManifest(outputDir: string): TtsManifest {
+  const manifestPath = resolve(outputDir, 'manifest.json')
   if (!existsSync(manifestPath)) return { version: 2, slides: {} }
   try {
     return JSON.parse(readFileSync(manifestPath, 'utf-8')) as TtsManifest
@@ -280,7 +167,14 @@ function loadExistingManifest(): TtsManifest {
 }
 
 // -------- main --------
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
+  if (!API_KEY) { console.error('❌ VITE_CLOUD_TTS_API_KEY is not set (define it in .env.local or .env)'); process.exit(1) }
+
+  const fmConfig   = parseFrontmatterTtsConfig(SLIDES_FILE)
+  const VOICE      = process.env.TTS_VOICE      ?? fmConfig.voiceName      ?? 'ja-JP-Neural2-B'
+  const LANG       = process.env.TTS_LANG       ?? fmConfig.languageCode   ?? 'ja-JP'
+  const BREAK_TIME = process.env.TTS_BREAK_TIME ?? fmConfig.clickBreakTime ?? '500ms'
+
   const useFfmpeg = isFfmpegAvailable()
   const ext = useFfmpeg ? 'ogg' : 'wav'
   console.log(`ffmpeg: ${useFfmpeg ? '✅ OGG Opus output' : '⚠️ WAV fallback'}`)
@@ -289,11 +183,11 @@ async function main(): Promise<void> {
   mkdirSync(OUTPUT_DIR, { recursive: true })
 
   const slides = parseSlides(readFileSync(SLIDES_FILE, 'utf-8'))
-  const batches = splitIntoBatches(slides)
+  const batches = splitIntoBatches(slides, BREAK_TIME)
 
   console.log(`\nSlides: ${slides.length}, batches: ${batches.length}`)
 
-  const existingManifest = loadExistingManifest()
+  const existingManifest = loadExistingManifest(OUTPUT_DIR)
   const allSlides: Record<string, TtsSlideEntry> = {}
 
   for (const [i, batchSlides] of batches.entries()) {
@@ -303,7 +197,6 @@ async function main(): Promise<void> {
 
     if (existsSync(outPath) && !FORCE) {
       console.log(`  ⏭ skip:  batch ${i + 1} (${pageRange})`)
-      // restore entries for these slides from the existing manifest
       for (const { page } of batchSlides) {
         const existing = existingManifest.slides?.[String(page)]
         if (existing) allSlides[String(page)] = existing
@@ -314,7 +207,7 @@ async function main(): Promise<void> {
     console.log(`  🎙 gen:   batch ${i + 1} (${pageRange})`)
 
     const { ssml } = buildSsml(batchSlides, BREAK_TIME)
-    const { audioContent, timepoints } = await callCloudTTS(ssml)
+    const { audioContent, timepoints } = await callCloudTTS(ssml, API_KEY, LANG, VOICE)
 
     const wavBuffer = Buffer.from(audioContent, 'base64')
 
@@ -338,4 +231,6 @@ async function main(): Promise<void> {
   console.log('\n✅ manifest.json generated')
 }
 
-main().catch(err => { console.error(err); process.exit(1) })
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch(err => { console.error(err); process.exit(1) })
+}
