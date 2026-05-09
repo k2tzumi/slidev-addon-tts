@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.9](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.8...v0.0.9) - 2026-05-09
+- fix: restore play button visibility in production builds and after errors by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/18
+
 ## [v0.0.8](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.7...v0.0.8) - 2026-05-09
 - fix: use BASE_URL for tts asset paths to support non-root deployments by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/16
 

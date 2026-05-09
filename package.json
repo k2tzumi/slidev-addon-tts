@@ -1,6 +1,6 @@
 {
   "name": "@katzumi/slidev-addon-tts",
-  "version": "v0.0.8",
+  "version": "v0.0.9",
   "description": "Slidev addon to read aloud speaker notes via Google Cloud Text-to-Speech API",
   "engines": {
     "node": ">=22.0.0",
