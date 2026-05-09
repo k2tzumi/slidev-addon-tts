@@ -17,10 +17,14 @@ export interface TtsManifest {
 
 let manifestCache: TtsManifest | null = null
 
+function ttsBase(): string {
+  const base = import.meta.env.BASE_URL ?? '/'
+  return base.endsWith('/') ? base : `${base}/`
+}
+
 export async function loadManifest(): Promise<TtsManifest> {
   if (manifestCache) return manifestCache
-  const base = import.meta.env.BASE_URL ?? '/'
-  const res = await fetch(`${base}tts/manifest.json`)
+  const res = await fetch(`${ttsBase()}tts/manifest.json`)
   if (!res.ok) throw new Error('manifest.json not found')
   const contentType = res.headers.get('content-type') ?? ''
   if (!contentType.includes('application/json')) {
@@ -45,9 +49,8 @@ export function resolvePosition(
   const clickEntry = slideEntry.clicks?.[String(click)]
   if (!clickEntry) return null
 
-  const base = import.meta.env.BASE_URL ?? '/'
   return {
-    file: `${base}tts/${slideEntry.file}`,
+    file: `${ttsBase()}tts/${slideEntry.file}`,
     startSec: clickEntry.start,
     endSec: clickEntry.end,
   }
