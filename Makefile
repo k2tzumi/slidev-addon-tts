@@ -55,5 +55,5 @@ coverage: node_modules
 
 .PHONY: tts
 tts: ## Generate TTS audio files
-tts: node_modules slides.md
-	npx slidev-addon-tts $(if $(wildcard public/tts/*),--force,)
+tts: node_modules example.md
+	npx slidev-addon-tts --slides example.md $(if $(wildcard public/tts/*),--force,)
