@@ -65,7 +65,7 @@ export async function play(
       const timemap: Record<string, number> = {}
       try {
         const { ssml } = buildSsml([{ page, sections }], breakTime)
-        const response = await callCloudTTS({ ssml, voiceName, languageCode, apiKey, useOggOpus: true })
+        const response = await callCloudTTS({ ssml, voiceName, languageCode, apiKey, useMp3: true })
         for (const { markName, timeSeconds } of (response.timepoints ?? [])) {
           timemap[markName] = timeSeconds
         }
@@ -86,7 +86,7 @@ export async function play(
       console.log(`${TAG} [on-demand] calling Cloud TTS API: slide ${page}`)
       try {
         const { ssml } = buildSsml([{ page, sections }], breakTime)
-        const response = await callCloudTTS({ ssml, voiceName, languageCode, apiKey, useOggOpus: true })
+        const response = await callCloudTTS({ ssml, voiceName, languageCode, apiKey, useMp3: true })
         const timemap: Record<string, number> = {}
         for (const { markName, timeSeconds } of (response.timepoints ?? [])) {
           timemap[markName] = timeSeconds

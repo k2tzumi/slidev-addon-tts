@@ -57,39 +57,39 @@ describe('buildBatchSlideEntries', () => {
   ]
 
   it('builds entries keyed by page number', () => {
-    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.ogg')
+    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.m4a')
     expect(Object.keys(entries)).toEqual(['1', '2'])
   })
 
   it('sets the correct audio file for each slide', () => {
-    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.ogg')
-    expect(entries['1'].file).toBe('batch-1.ogg')
-    expect(entries['2'].file).toBe('batch-1.ogg')
+    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.m4a')
+    expect(entries['1'].file).toBe('batch-1.m4a')
+    expect(entries['2'].file).toBe('batch-1.m4a')
   })
 
   it('calculates click_0 start time from slide mark', () => {
-    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.ogg')
+    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.m4a')
     expect(entries['1'].clicks['0'].start).toBe(0.0)
   })
 
   it('sets end of click_0 to the next timepoint start', () => {
-    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.ogg')
+    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.m4a')
     expect(entries['1'].clicks['0'].end).toBe(2.5)
   })
 
   it('maps click_1 start from slide_N_click_1 mark', () => {
-    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.ogg')
+    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.m4a')
     expect(entries['1'].clicks['1'].start).toBe(2.5)
     expect(entries['1'].clicks['1'].end).toBe(5.0)
   })
 
   it('sets end to null for the last timepoint in the batch', () => {
-    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.ogg')
+    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.m4a')
     expect(entries['2'].clicks['0'].end).toBeNull()
   })
 
   it('does not add click_1 entry when slide has only one section', () => {
-    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.ogg')
+    const entries = buildBatchSlideEntries(slides, timepoints, 'batch-1.m4a')
     expect(entries['2'].clicks['1']).toBeUndefined()
   })
 
@@ -97,7 +97,7 @@ describe('buildBatchSlideEntries', () => {
     const entries = buildBatchSlideEntries(
       [{ page: 99, sections: ['text'] }],
       [],
-      'batch-1.ogg',
+      'batch-1.m4a',
     )
     expect(entries['99'].clicks['0'].start).toBe(0)
   })
@@ -106,14 +106,14 @@ describe('buildBatchSlideEntries', () => {
     const s1 = buildBatchSlideEntries(
       [{ page: 1, sections: ['a'] }],
       [{ markName: 'slide_1', timeSeconds: 0 }],
-      'batch-1.ogg',
+      'batch-1.m4a',
     )
     const s2 = buildBatchSlideEntries(
       [{ page: 2, sections: ['b'] }],
       [{ markName: 'slide_2', timeSeconds: 0 }],
-      'batch-2.ogg',
+      'batch-2.m4a',
     )
-    expect(s1['1'].file).toBe('batch-1.ogg')
-    expect(s2['2'].file).toBe('batch-2.ogg')
+    expect(s1['1'].file).toBe('batch-1.m4a')
+    expect(s2['2'].file).toBe('batch-2.m4a')
   })
 })

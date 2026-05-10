@@ -29,14 +29,14 @@ function isFfmpegAvailable(): boolean {
   try { execSync('ffmpeg -version', { stdio: 'ignore' }); return true } catch { return false }
 }
 
-// -------- WAV → OGG Opus conversion --------
-function wavToOggOpus(wavBuffer: Buffer, outPath: string): void {
+// -------- WAV → AAC (M4A) conversion --------
+function wavToAac(wavBuffer: Buffer, outPath: string): void {
   const tmp = join(tmpdir(), `tts-${Date.now()}.wav`)
   writeFileSync(tmp, wavBuffer)
   try {
     execFileSync('ffmpeg', [
       '-i', tmp,
-      '-c:a', 'libopus', '-b:a', '24k', '-vbr', 'on', '-application', 'voip',
+      '-c:a', 'aac', '-b:a', '64k',
       '-y', outPath,
     ], { stdio: 'ignore' })
   } finally {
@@ -176,8 +176,8 @@ export async function main(): Promise<void> {
   const BREAK_TIME = process.env.TTS_BREAK_TIME ?? fmConfig.clickBreakTime ?? '500ms'
 
   const useFfmpeg = isFfmpegAvailable()
-  const ext = useFfmpeg ? 'ogg' : 'wav'
-  console.log(`ffmpeg: ${useFfmpeg ? '✅ OGG Opus output' : '⚠️ WAV fallback'}`)
+  const ext = useFfmpeg ? 'm4a' : 'wav'
+  console.log(`ffmpeg: ${useFfmpeg ? '✅ AAC (M4A) output' : '⚠️ WAV fallback'}`)
   console.log(`voice:  ${VOICE} / lang: ${LANG} / breakTime: ${BREAK_TIME}${fmConfig.voiceName ? ' (from frontmatter)' : ''}`)
 
   mkdirSync(OUTPUT_DIR, { recursive: true })
@@ -212,7 +212,7 @@ export async function main(): Promise<void> {
     const wavBuffer = Buffer.from(audioContent, 'base64')
 
     if (useFfmpeg) {
-      wavToOggOpus(wavBuffer, outPath)
+      wavToAac(wavBuffer, outPath)
     } else {
       writeFileSync(outPath, wavBuffer)
     }
