@@ -77,7 +77,7 @@ jobs:
         with:
           ffmpeg-version: release
           github-token: ${{ github.token }}
-      - name: Generate TTS audio (OGG Opus + manifest.json)
+      - name: Generate TTS audio (AAC + manifest.json)
         if: ${{ env.VITE_CLOUD_TTS_API_KEY != '' }}
         env:
           VITE_CLOUD_TTS_API_KEY: ${{ secrets.CLOUD_TTS_API_KEY }}

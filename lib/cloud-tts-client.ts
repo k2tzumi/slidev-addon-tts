@@ -3,12 +3,12 @@ export interface CloudTtsRequest {
   voiceName: string
   languageCode: string
   apiKey: string
-  /** Set to true to request OGG_OPUS encoding for browser playback (default: false = LINEAR16) */
-  useOggOpus?: boolean
+  /** Set to true to request MP3 encoding for browser playback (default: false = LINEAR16) */
+  useMp3?: boolean
 }
 
 export interface CloudTtsResponse {
-  /** base64-encoded audio data (WAV for LINEAR16, OGG for OGG_OPUS) */
+  /** base64-encoded audio data (WAV for LINEAR16, MP3 for MP3) */
   audioContent: string
   timepoints: Array<{
     markName: string
@@ -29,7 +29,7 @@ export async function callCloudTTS(req: CloudTtsRequest): Promise<CloudTtsRespon
         name: req.voiceName,
       },
       audioConfig: {
-        audioEncoding: req.useOggOpus ? 'OGG_OPUS' : 'LINEAR16',
+        audioEncoding: req.useMp3 ? 'MP3' : 'LINEAR16',
         sampleRateHertz: 24000,
       },
       enableTimePointing: ['SSML_MARK'],

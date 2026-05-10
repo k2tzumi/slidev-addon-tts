@@ -6,7 +6,7 @@ export interface TtsClickEntry {
 }
 
 export interface TtsSlideEntry {
-  file: string                        // audio file name (e.g. "batch-1.ogg")
+  file: string                        // audio file name (e.g. "batch-1.m4a")
   clicks: Record<string, TtsClickEntry> // clicks["0"], clicks["1"], ...
 }
 

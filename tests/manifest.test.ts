@@ -6,14 +6,14 @@ const sampleManifest: TtsManifest = {
   version: 2,
   slides: {
     '1': {
-      file: 'batch-1.ogg',
+      file: 'batch-1.m4a',
       clicks: {
         '0': { start: 0.0, end: 2.5 },
         '1': { start: 2.5, end: 5.0 },
       },
     },
     '2': {
-      file: 'batch-1.ogg',
+      file: 'batch-1.m4a',
       clicks: {
         '0': { start: 5.0, end: null },
       },
@@ -44,7 +44,7 @@ describe('resolvePosition', () => {
 
   it('includes the audio file name in the returned file path', () => {
     const result = resolvePosition(sampleManifest, 1, 0)
-    expect(result!.file).toContain('batch-1.ogg')
+    expect(result!.file).toContain('batch-1.m4a')
   })
 
   it('returns null for an unknown slide', () => {
