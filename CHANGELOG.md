@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.0.13](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.12...v0.0.13) - 2026-05-10
+- feat: add Vitest unit tests for parser, SSML builder, and TTS script by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/26
+- feat: add octocov coverage reporting and expand unit tests by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/28
+- feat: change audio format from OGG Opus to AAC/MP3 for smartphone compatibility by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/29
+
 ## [v0.0.12](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.11...v0.0.12) - 2026-05-09
 - fix: ignore --- inside code fences when splitting slides by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/24
 
