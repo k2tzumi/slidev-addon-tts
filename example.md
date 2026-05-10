@@ -34,7 +34,7 @@ This addon supports two distinct playback modes, each suited to a different work
 
 [click]
 
-Pre-generated mode is recommended for production. Audio files are generated at build time and served as static OGG Opus files alongside your slides. No API key is needed when you're actually presenting.
+Pre-generated mode is recommended for production. Audio files are generated at build time and served as static AAC (M4A) files alongside your slides. No API key is needed when you're actually presenting.
 
 [click]
 
@@ -423,8 +423,8 @@ VITE_CLOUD_TTS_API_KEY=your_key npx slidev-addon-tts
 ```
 public/tts/
 ├── manifest.json      ← timestamp map: slide × click → seconds
-├── batch-1.ogg        ← OGG Opus (requires ffmpeg) or .wav fallback
-└── batch-2.ogg        ← additional batches for large decks
+├── batch-1.m4a        ← AAC (requires ffmpeg) or .wav fallback
+└── batch-2.m4a        ← additional batches for large decks
 ```
 
 </v-click>
@@ -451,7 +451,7 @@ Pre-generated mode is recommended for production — audio is served as static f
 
 [click]
 
-Run the build:tts script with your API key. The script reads your slides.md, generates SSML with mark tags, calls the Cloud TTS API, converts WAV to OGG Opus using ffmpeg, and writes the files to public/tts/. If ffmpeg is not installed, WAV files are written instead.
+Run the build:tts script with your API key. The script reads your slides.md, generates SSML with mark tags, calls the Cloud TTS API, converts WAV to AAC (M4A) using ffmpeg, and writes the files to public/tts/. If ffmpeg is not installed, WAV files are written instead.
 
 [click]
 
@@ -500,7 +500,7 @@ Name: <span v-mark="{ type: 'highlight', color: '#fbbf24'}">`CLOUD_TTS_API_KEY`<
 
 <v-click>
 
-> Ubuntu runners have ffmpeg pre-installed — OGG Opus output works without additional setup.
+> Ubuntu runners have ffmpeg pre-installed — AAC (M4A) output works without additional setup.
 
 </v-click>
 
@@ -517,7 +517,7 @@ The if condition checks that the API key is set before running the step. This ma
 
 [click]
 
-Ubuntu runners on GitHub Actions have ffmpeg pre-installed, so the script will automatically produce OGG Opus files with no additional setup. Add your API key as a repository secret using the name CLOUD_TTS_API_KEY. The workflow maps it to the variable name the script reads.
+Ubuntu runners on GitHub Actions have ffmpeg pre-installed, so the script will automatically produce AAC (M4A) files with no additional setup. Add your API key as a repository secret using the name CLOUD_TTS_API_KEY. The workflow maps it to the variable name the script reads.
 -->
 
 ---
