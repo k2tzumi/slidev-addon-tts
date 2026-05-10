@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.15](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.14...v0.0.15) - 2026-05-10
+- fix: resolve symlink in bin entry guard so npx invocation calls main() by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/33
+
 ## [v0.0.14](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.13...v0.0.14) - 2026-05-10
 - docs: update README to reflect AAC/MP3 format change from OGG Opus by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/30
 - docs: update example.md to reflect AAC/MP3 format change from OGG Opus by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/32
