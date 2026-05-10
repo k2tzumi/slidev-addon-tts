@@ -1,0 +1,32 @@
+coverage:
+  paths:
+    - coverage/lcov.info
+
+codeToTestRatio:
+  code:
+    - '**/*.ts'
+    - '!tests/**'
+    - '!*.config.ts'
+    - '!node_modules/**'
+  test:
+    - 'tests/**/*.test.ts'
+
+summary:
+  if: true
+
+body:
+  if: is_pull_request
+
+comment:
+  updatePrevious: true
+report:
+  datastores:
+    - artifact://${GITHUB_REPOSITORY}
+diff:
+  datastores:
+    - artifact://${GITHUB_REPOSITORY}
+
+push:
+  if: is_default_branch
+  datastores:
+    - artifact://${GITHUB_REPOSITORY}

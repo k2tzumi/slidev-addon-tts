@@ -12,3 +12,4 @@ slides-export-notes.pdf
 example-export.pdf
 .env.local
 public/tts
+coverage
