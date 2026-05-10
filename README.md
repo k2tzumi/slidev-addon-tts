@@ -6,7 +6,7 @@ A [Slidev](https://sli.dev) addon that reads speaker notes aloud using the **Goo
 
 ## Features
 
-- **Pre-generated mode** (recommended for production): Audio files are generated at build time and served as static OGG Opus files. No API key required at runtime.
+- **Pre-generated mode** (recommended for production): Audio files are generated at build time and served as static AAC (M4A) files. No API key required at runtime.
 - **On-demand mode** (for local development): The browser calls the Cloud TTS API directly on each slide/click navigation.
 - SSML `<mark>` timepoints for precise seek-based playback within batch audio files.
 - **Two-layer caching** in on-demand mode: in-session memory cache (decoded AudioBuffer) + IndexedDB (persistent across page reloads) to avoid redundant API calls. When audio is cached but timepoints are missing, only the timepoints are re-fetched.
@@ -27,7 +27,7 @@ A [Slidev](https://sli.dev) addon that reads speaker notes aloud using the **Goo
 ```
 Build time:
   slides.md notes → SSML (with <mark> tags) → Cloud TTS API
-    → WAV (base64) → ffmpeg → OGG Opus
+    → WAV (base64) → ffmpeg → AAC (M4A)
     → timepoints → manifest.json
 
 Runtime:
@@ -39,8 +39,8 @@ Audio files are stored in `public/tts/` as batch files (multiple slides per file
 ```
 public/tts/
 ├── manifest.json      # timestamp map: page × click → seconds
-├── batch-1.ogg        # slides 1–N
-├── batch-2.ogg        # slides N+1–M
+├── batch-1.m4a        # slides 1–N
+├── batch-2.m4a        # slides N+1–M
 └── ...
 ```
 
@@ -48,7 +48,7 @@ public/tts/
 
 ```
 Runtime:
-  Slide navigation → build SSML for current slide → Cloud TTS API (OGG Opus)
+  Slide navigation → build SSML for current slide → Cloud TTS API (MP3)
     → decode → seek AudioBuffer → play
     → timepoints cached in memory; audio cached in IndexedDB
 ```
@@ -222,8 +222,8 @@ After the script completes, confirm the following files exist under `public/tts/
 ```
 public/tts/
 ├── manifest.json        ← must exist
-├── batch-1.ogg          ← or batch-1.wav if ffmpeg is not installed
-└── batch-2.ogg          ← additional batches if slides overflow 4,500 bytes
+├── batch-1.m4a          ← or batch-1.wav if ffmpeg is not installed
+└── batch-2.m4a          ← additional batches if slides overflow 4,500 bytes
 ```
 
 Check `manifest.json` content:
@@ -233,14 +233,14 @@ Check `manifest.json` content:
   "version": 2,
   "slides": {
     "2": {
-      "file": "batch-1.ogg",
+      "file": "batch-1.m4a",
       "clicks": {
         "0": { "start": 0.0,  "end": 3.84 },
         "1": { "start": 3.84, "end": 8.1  }
       }
     },
     "3": {
-      "file": "batch-1.ogg",
+      "file": "batch-1.m4a",
       "clicks": {
         "0": { "start": 8.1,  "end": 12.5 },
         "1": { "start": 12.5, "end": null  }
@@ -275,7 +275,7 @@ Open DevTools console and navigate slides.
 [slidev-addon-tts] [static] slide 2, click 1
 ```
 
-No API calls are made at runtime. Audio is loaded from `public/tts/batch-1.ogg` and seeked to the correct position using timestamps from `manifest.json`.
+No API calls are made at runtime. Audio is loaded from `public/tts/batch-1.m4a` and seeked to the correct position using timestamps from `manifest.json`.
 
 ### Troubleshooting
 
@@ -294,7 +294,7 @@ No API calls are made at runtime. Audio is loaded from `public/tts/batch-1.ogg` 
 Add the following to your deploy workflow. Ubuntu runners have ffmpeg pre-installed.
 
 ```yaml
-- name: Generate TTS audio (OGG Opus + manifest.json)
+- name: Generate TTS audio (AAC + manifest.json)
   env:
     VITE_CLOUD_TTS_API_KEY: ${{ secrets.CLOUD_TTS_API_KEY }}
     TTS_VOICE: ja-JP-Neural2-B
