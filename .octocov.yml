@@ -11,9 +11,6 @@ codeToTestRatio:
   test:
     - 'tests/**/*.test.ts'
 
-comment:
-  if: is_pull_request
-
 summary:
   if: true
 
