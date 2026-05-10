@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.0.14](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.13...v0.0.14) - 2026-05-10
+- docs: update README to reflect AAC/MP3 format change from OGG Opus by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/30
+- docs: update example.md to reflect AAC/MP3 format change from OGG Opus by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/32
+
 ## [v0.0.13](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.12...v0.0.13) - 2026-05-10
 - feat: add Vitest unit tests for parser, SSML builder, and TTS script by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/26
 - feat: add octocov coverage reporting and expand unit tests by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/28
