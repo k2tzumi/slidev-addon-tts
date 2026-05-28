@@ -44,6 +44,30 @@ export function usePlaybackController(nav: any, config: TtsAddonConfig, isTtsEna
     return Array.from({ length: clickCount + 1 }, () => 'pregenerated')
   }
 
+  function normalizeDictionaryEntries(value: unknown): Array<{ from: string; to: string }> {
+    if (!Array.isArray(value)) return []
+    return value
+      .map(item => {
+        if (typeof item !== 'object' || item === null) return null
+        const from = (item as any).from
+        const to = (item as any).to
+        if (typeof from !== 'string' || typeof to !== 'string') return null
+        return { from, to }
+      })
+      .filter((entry): entry is { from: string; to: string } => entry !== null)
+  }
+
+  function getSlideDictionary(page: number): Array<{ from: string; to: string }> {
+    const slideInfo = (slides.value[page - 1]?.meta as any)?.slide
+    const frontmatter = slideInfo?.frontmatter ?? (slideInfo as any)?.frontmatter ?? null
+    if (!frontmatter) return []
+
+    return [
+      ...normalizeDictionaryEntries(frontmatter.ttsDict),
+      ...normalizeDictionaryEntries(frontmatter.tts?.dictionary),
+    ]
+  }
+
   const hasCurrentNotes = computed(() => {
     const sections = getSections(currentSlideNo.value)
     return sections.length > 0 && !!sections[currentClicks.value]
@@ -88,7 +112,7 @@ export function usePlaybackController(nav: any, config: TtsAddonConfig, isTtsEna
       let playFailed = false
       try {
         console.log(`${LOG_TAG} requestPlay slide ${target.page}, click ${target.click}${resumeFromSec !== undefined ? ` (resume: ${resumeFromSec.toFixed(2)}s)` : ''}`)
-        await play(target.page, target.click, sections, config, resumeFromSec)
+        await play(target.page, target.click, sections, config, resumeFromSec, getSlideDictionary(target.page))
       } catch (err) {
         console.error(`${LOG_TAG} play error:`, err)
         playFailed = true

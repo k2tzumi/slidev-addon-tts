@@ -6,7 +6,7 @@ import { buildSsml } from './ssml-builder'
 import { calculateEffectiveStart } from './playback-utils'
 import { getCloudTtsApiKey } from './env'
 import { LOG_TAG as TAG, DEFAULT_CLICK_BREAK_TIME, DEFAULT_VOICE_NAME, DEFAULT_LANGUAGE_CODE } from './constants'
-import type { TtsAddonConfig } from '../types'
+import type { TtsAddonConfig, DictEntry } from '../types'
 
 /** Compute a short hash of text to detect note changes for cache invalidation. */
 function textHash(text: string): string {
@@ -26,6 +26,7 @@ export async function play(
   sections: string[],
   config: TtsAddonConfig,
   resumeFromSec?: number,
+  slideDictionary: DictEntry[] = [],
 ): Promise<void> {
   // --- pre-generated mode ---
   // fall back to on-demand if config is empty (headmatter unavailable) but an API key exists
@@ -64,7 +65,7 @@ export async function play(
       console.log(`${TAG} [on-demand] audio cached, fetching timepoints: slide ${page}`)
       const timemap: Record<string, number> = {}
       try {
-        const { ssml } = buildSsml([{ page, sections }], breakTime)
+        const { ssml } = buildSsml([{ page, sections, dictionary: slideDictionary }], breakTime, config.dictionary ?? [])
         const response = await callCloudTTS({ ssml, voiceName, languageCode, apiKey, useMp3: true })
         for (const { markName, timeSeconds } of (response.timepoints ?? [])) {
           timemap[markName] = timeSeconds
@@ -85,7 +86,7 @@ export async function play(
       // neither audio nor timepoints are cached — call the API
       console.log(`${TAG} [on-demand] calling Cloud TTS API: slide ${page}`)
       try {
-        const { ssml } = buildSsml([{ page, sections }], breakTime)
+        const { ssml } = buildSsml([{ page, sections, dictionary: slideDictionary }], breakTime, config.dictionary ?? [])
         const response = await callCloudTTS({ ssml, voiceName, languageCode, apiKey, useMp3: true })
         const timemap: Record<string, number> = {}
         for (const { markName, timeSeconds } of (response.timepoints ?? [])) {
