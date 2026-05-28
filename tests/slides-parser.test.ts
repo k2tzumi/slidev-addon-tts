@@ -145,6 +145,22 @@ describe('parseSlides', () => {
     ])
   })
 
+  it('parses ttsDict from slide-specific frontmatter', () => {
+    const md = wrap(
+      'title: Test',
+      'layout: center\nttsDict:\n  - from: "UoW"\n    to: "ユニットオブワーク"',
+      '# Slide 1\n<!-- note1 -->',
+    )
+    const result = parseSlides(md)
+    expect(result).toEqual([
+      {
+        page: 1,
+        sections: ['note1'],
+        dictionary: [{ from: 'UoW', to: 'ユニットオブワーク' }],
+      },
+    ])
+  })
+
   // regression test for bug fixed in commit 8eae12b
   it('does not split on --- inside a code fence', () => {
     const md = wrap(
@@ -205,5 +221,22 @@ ttsConfig:
     expect(result.voiceName).toBe('ja-JP-Neural2-B')
     expect(result.languageCode).toBeUndefined()
     expect(result.clickBreakTime).toBeUndefined()
+  })
+
+  it('parses a dictionary from root tts frontmatter', () => {
+    const md = `---
+tts:
+  dictionary:
+    - from: "Doctrine"
+      to: "ドクトリン"
+    - from: "ORM"
+      to: "オーアールエム"
+---`
+    expect(parseFrontmatterTtsConfigFromString(md)).toEqual({
+      dictionary: [
+        { from: 'Doctrine', to: 'ドクトリン' },
+        { from: 'ORM', to: 'オーアールエム' },
+      ],
+    })
   })
 })

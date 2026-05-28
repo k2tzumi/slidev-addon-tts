@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import type { DictEntry } from '../types'
 import type { SlideNote } from './ssml-builder.js'
 
 export type { SlideNote }
@@ -7,6 +8,7 @@ export interface FrontmatterTtsConfig {
   voiceName?: string
   languageCode?: string
   clickBreakTime?: string
+  dictionary?: DictEntry[]
 }
 
 export function parseFrontmatterTtsConfig(filePath: string): FrontmatterTtsConfig {
@@ -18,13 +20,71 @@ export function parseFrontmatterTtsConfig(filePath: string): FrontmatterTtsConfi
   }
 }
 
+function parseDictEntries(block: string): DictEntry[] {
+  const entries: DictEntry[] = []
+  let current: Partial<DictEntry> = {}
+
+  for (const rawLine of block.split('\n')) {
+    const line = rawLine.trim()
+    if (!line) continue
+
+    const itemMatch = line.match(/^-+\s*from:\s*["']?(.*?)["']?$/)
+    if (itemMatch) {
+      if (current.from && current.to) entries.push(current as DictEntry)
+      current = { from: itemMatch[1].trim() }
+      continue
+    }
+
+    const fromMatch = line.match(/^from:\s*["']?(.*?)["']?$/)
+    if (fromMatch) {
+      current.from = fromMatch[1].trim()
+      continue
+    }
+
+    const toMatch = line.match(/^to:\s*["']?(.*?)["']?$/)
+    if (toMatch) {
+      current.to = toMatch[1].trim()
+    }
+  }
+
+  if (current.from && current.to) entries.push(current as DictEntry)
+  return entries
+}
+
+function parseTtsDictionaryFromFrontmatter(md: string): DictEntry[] {
+  const ttsBlock = md.match(/^tts:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
+  const dictionaryBlock = ttsBlock.match(/^\s*dictionary:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
+  const ttsConfigBlock = md.match(/^ttsConfig:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
+  const ttsConfigDictionaryBlock = ttsConfigBlock.match(/^\s*dictionary:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
+  return [
+    ...parseDictEntries(ttsConfigDictionaryBlock),
+    ...parseDictEntries(dictionaryBlock),
+  ]
+}
+
+function parseSlideDictionaryFromFrontmatter(block: string): DictEntry[] {
+  const ttsDictBlock = block.match(/^ttsDict:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
+  const ttsBlock = block.match(/^tts:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
+  const dictionaryBlock = ttsBlock.match(/^\s*dictionary:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
+  return [
+    ...parseDictEntries(ttsDictBlock),
+    ...parseDictEntries(dictionaryBlock),
+  ]
+}
+
 export function parseFrontmatterTtsConfigFromString(md: string): FrontmatterTtsConfig {
   const parts = md.split(/^---$/m)
   if (parts.length < 2) return {}
   const fm = parts[1]
   const block = fm.match(/^ttsConfig:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
   const get = (key: string) => block.match(new RegExp(`^\\s+${key}:\\s*["']?([^"'\\n]+)["']?`, 'm'))?.[1]?.trim()
-  return { voiceName: get('voiceName'), languageCode: get('languageCode'), clickBreakTime: get('clickBreakTime') }
+  const dictionary = parseTtsDictionaryFromFrontmatter(fm)
+  return {
+    voiceName: get('voiceName'),
+    languageCode: get('languageCode'),
+    clickBreakTime: get('clickBreakTime'),
+    ...(dictionary.length > 0 ? { dictionary } : {}),
+  }
 }
 
 /**
@@ -42,7 +102,7 @@ export function isSlideSpecificFrontmatter(block: string): boolean {
   if (/^\|/m.test(trimmed)) return false
 
   const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean)
-  return lines.length > 0 && lines.every(l => /^[\w-]+\s*:/.test(l) || /^\s/.test(l))
+  return lines.length > 0 && lines.every(l => /^[\w-]+\s*:/.test(l) || /^\s/.test(l) || /^-\s+/.test(l))
 }
 
 export function extractLastComment(block: string): string {
@@ -90,19 +150,33 @@ export function parseSlides(md: string): SlideNote[] {
   const unmask = (s: string) => s.replace(new RegExp(PLACEHOLDER, 'g'), '---')
   const result: SlideNote[] = []
   let page = 0
+  let pendingSlideFrontmatter = ''
 
   // parts[0] = before global FM (empty), parts[1] = global FM, parts[2]+ = slides
   for (let i = 2; i < parts.length; i++) {
     const block = unmask(parts[i])
 
-    if (isSlideSpecificFrontmatter(block)) continue
+    if (isSlideSpecificFrontmatter(block)) {
+      pendingSlideFrontmatter = block
+      continue
+    }
 
     page++
     const raw = extractLastComment(block)
-    if (!raw) continue
+    if (!raw) {
+      pendingSlideFrontmatter = ''
+      continue
+    }
 
     const sections = raw.split(/\[click\]/i).map(s => s.trim()).filter(Boolean)
-    if (sections.length > 0) result.push({ page, sections })
+    const dictionary = parseSlideDictionaryFromFrontmatter(pendingSlideFrontmatter)
+    pendingSlideFrontmatter = ''
+
+    if (sections.length > 0) {
+      const slideNote: SlideNote = { page, sections }
+      if (dictionary.length > 0) slideNote.dictionary = dictionary
+      result.push(slideNote)
+    }
   }
 
   return result
