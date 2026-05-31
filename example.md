@@ -6,6 +6,11 @@ ttsConfig:
   usePregenerated: false
   clickBreakTime: "500ms"
   prefetch: true
+  dictionary:
+    - from: "SSML"
+      to: "Speech Synthesis Markup Language"
+    - from: "VITE_CLOUD_TTS_API_KEY"
+      to: "Vite Cloud T-T-S A-P-I Key"
 ---
 
 # slidev-addon-tts
@@ -16,6 +21,25 @@ A Slidev addon that reads speaker notes aloud, synchronized with slide navigatio
 
 <!--
 Welcome to slidev-addon-tts. This addon connects your Slidev presentations to the Google Cloud Text-to-Speech API, reading your speaker notes aloud as you navigate through slides. If you can hear this, the addon is working correctly. Let's walk through the complete setup.
+-->
+
+---
+ttsDict: false
+---
+
+# How it works
+
+<v-clicks>
+
+- This addon reads your speaker notes aloud with Cloud TTS.  
+- It uses SSML to align narration with slide click events.
+
+</v-clicks>
+
+<!--
+I will explain how this add-on works.  
+[click] SSML stands for Speech Synthesis Markup Language.
+[click] The dictionary makes sure the acronym is spoken naturally.
 -->
 
 ---
@@ -46,6 +70,10 @@ Both modes use SSML mark timepoints to precisely align audio playback with your 
 -->
 
 ---
+ttsDict:
+  - from: "TTS"
+    to: "Text to Speech"  
+---
 
 # Prerequisites
 
@@ -75,7 +103,7 @@ Slidev 0.49 or higher is also required. This addon relies on APIs introduced in 
 
 [click]
 
-Finally, you need a Google Cloud account to generate a Text-to-Speech API key. We'll go through that process step by step in the next two slides.
+Finally, you need a Google Cloud account to generate a TTS API key. We'll go through that process step by step in the next two slides.
 -->
 
 ---
@@ -340,6 +368,129 @@ If a slide has multiple HTML comment blocks — for example, a component that ge
 [click]
 
 Slides with no HTML comment produce no audio. The TTS indicator is automatically hidden for those slides so it doesn't confuse the audience.
+-->
+
+---
+
+
+# Pronunciation Dictionary
+
+Use global and slide-specific dictionaries to customize how words are pronounced:
+
+::left::
+
+<v-click at="1">
+
+**Global dictionary** in frontmatter:
+
+```yaml
+tts:
+  dictionary:
+    - from: "TTS"
+      to: "Text to Speech"
+    - from: "SSML"
+      to: "Speech Synthesis Markup Language"
+```
+
+Applied to all slides.
+
+</v-click>
+
+
+::right::
+
+<v-click at="2">
+
+**Slide-specific overrides** per slide:
+
+```yaml
+---
+layout: default
+ttsDict:
+  - from: "UoW"
+    to: "Unit of Work"
+---
+```
+
+Override or add pronunciation for this slide only.
+
+</v-click>
+
+<!--
+Both global and slide-specific dictionaries help ensure words are pronounced correctly.
+
+[click]
+
+Add a global dictionary to your presentation frontmatter. Each entry has a "from" field — the text to match — and a "to" field — how it should be spoken. These rules apply to every slide automatically.
+
+[click]
+
+You can also add slide-specific pronunciation overrides using the ttsDict field in a slide's frontmatter. This takes priority over global entries with the same "from" value, allowing you to fine-tune pronunciation on a per-slide basis.
+-->
+
+---
+
+# Disable Global Dictionary
+
+Sometimes you want a slide to ignore the global dictionary entirely and use only slide-specific entries — or no dictionary at all.
+
+<Transform :scale="0.9">
+
+<v-click>
+
+Set `ttsDict: false` to disable the global dictionary for that slide:
+
+
+```yaml
+---
+layout: default
+ttsDict: false
+---
+```
+
+</v-click>
+
+<v-click>
+
+The global dictionary is ignored. No pronunciation overrides are applied unless you add slide-specific entries:
+
+
+```yaml
+---
+layout: default
+ttsDict: false
+tts:
+  dictionary:
+    - from: "API"
+      to: "Application Programming Interface"
+---
+```
+
+
+</v-click>
+
+<v-click>
+
+In this example, only the `API` entry applies — all global dictionary entries are disabled for this slide.
+
+</v-click>
+
+</Transform>
+
+<!--
+You can disable the global dictionary on specific slides when needed.
+
+[click]
+
+Set ttsDict to false in the slide's frontmatter. This completely ignores all global dictionary entries and uses no dictionary for that slide.
+
+[click]
+
+If you want slide-specific entries without the global dictionary, combine ttsDict: false with your own dictionary under the tts field. This gives you fine-grained control over pronunciation on a per-slide basis.
+
+[click]
+
+This is useful when a particular slide uses technical terms that should not be transformed, or when you want a different pronunciation strategy for that one slide only.
 -->
 
 ---
