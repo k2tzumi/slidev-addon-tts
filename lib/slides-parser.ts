@@ -62,14 +62,23 @@ function parseTtsDictionaryFromFrontmatter(md: string): DictEntry[] {
   ]
 }
 
-function parseSlideDictionaryFromFrontmatter(block: string): DictEntry[] {
+function parseSlideDictionaryFromFrontmatter(block: string): { dictionary: DictEntry[]; disableGlobalDict: boolean } {
+  // Check if ttsDict: false (disable global dictionary)
+  const isTtsDictFalse = /^ttsDict:\s*(false|"false"|'false')\s*$/m.test(block)
+  
   const ttsDictBlock = block.match(/^ttsDict:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
   const ttsBlock = block.match(/^tts:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
   const dictionaryBlock = ttsBlock.match(/^\s*dictionary:\s*\n((?:[ \t]+.+\n?)*)/m)?.[1] ?? ''
-  return [
+  
+  const dictionary = [
     ...parseDictEntries(ttsDictBlock),
     ...parseDictEntries(dictionaryBlock),
   ]
+  
+  return {
+    dictionary,
+    disableGlobalDict: isTtsDictFalse,
+  }
 }
 
 export function parseFrontmatterTtsConfigFromString(md: string): FrontmatterTtsConfig {
@@ -169,12 +178,13 @@ export function parseSlides(md: string): SlideNote[] {
     }
 
     const sections = raw.split(/\[click\]/i).map(s => s.trim()).filter(Boolean)
-    const dictionary = parseSlideDictionaryFromFrontmatter(pendingSlideFrontmatter)
+    const { dictionary, disableGlobalDict } = parseSlideDictionaryFromFrontmatter(pendingSlideFrontmatter)
     pendingSlideFrontmatter = ''
 
     if (sections.length > 0) {
       const slideNote: SlideNote = { page, sections }
       if (dictionary.length > 0) slideNote.dictionary = dictionary
+      if (disableGlobalDict) slideNote.disableGlobalDict = true
       result.push(slideNote)
     }
   }

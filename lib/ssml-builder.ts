@@ -4,6 +4,8 @@ export interface SlideNote {
   page: number
   sections: string[]  // text sections split by [click]
   dictionary?: DictEntry[]
+  /** When true, ignore global dictionary and only use slide-specific dictionary */
+  disableGlobalDict?: boolean
 }
 
 export interface SsmlBuildResult {
@@ -63,8 +65,9 @@ export function buildSsml(
   const pages: number[] = []
 
   for (let si = 0; si < slides.length; si++) {
-    const { page, sections, dictionary } = slides[si]
-    const dict = buildDictionary(globalDictionary, dictionary ?? [])
+    const { page, sections, dictionary, disableGlobalDict } = slides[si]
+    const effectiveGlobalDict = disableGlobalDict ? [] : globalDictionary
+    const dict = buildDictionary(effectiveGlobalDict, dictionary ?? [])
     pages.push(page)
 
     // insert a break between slides (skip for the first slide in the batch)

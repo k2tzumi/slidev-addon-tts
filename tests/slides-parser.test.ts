@@ -161,6 +161,39 @@ describe('parseSlides', () => {
     ])
   })
 
+  it('sets disableGlobalDict when ttsDict: false', () => {
+    const md = wrap(
+      'title: Test',
+      'layout: center\nttsDict: false',
+      '# Slide 1\n<!-- note1 -->',
+    )
+    const result = parseSlides(md)
+    expect(result).toEqual([
+      {
+        page: 1,
+        sections: ['note1'],
+        disableGlobalDict: true,
+      },
+    ])
+  })
+
+  it('combines disableGlobalDict with slide-specific dictionary entries', () => {
+    const md = wrap(
+      'title: Test',
+      'layout: center\nttsDict: false\ntts:\n  dictionary:\n    - from: "UoW"\n      to: "ユニットオブワーク"',
+      '# Slide 1\n<!-- note1 -->',
+    )
+    const result = parseSlides(md)
+    expect(result).toEqual([
+      {
+        page: 1,
+        sections: ['note1'],
+        dictionary: [{ from: 'UoW', to: 'ユニットオブワーク' }],
+        disableGlobalDict: true,
+      },
+    ])
+  })
+
   // regression test for bug fixed in commit 8eae12b
   it('does not split on --- inside a code fence', () => {
     const md = wrap(
