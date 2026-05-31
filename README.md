@@ -91,6 +91,56 @@ ttsConfig:
 | `usePregenerated` | `boolean` | `true` | `true`: static files, `false`: on-demand |
 | `prefetch` | `boolean` | `true` | Background prefetch of next slide |
 
+## Pronunciation dictionary
+
+Add global pronunciation overrides in `tts.dictionary` at the root of your frontmatter:
+
+```yaml
+tts:
+  dictionary:
+    - from: "TTS"
+      to: "Text to Speach"
+    - from: "SSML"
+      to: "Speech Synthesis Markup Language"
+```
+
+Use `ttsDict` in slide-specific frontmatter to add or override pronunciations for a single slide:
+
+```yaml
+---
+layout: center
+ttsDict:
+  - from: "UoW"
+    to: "Unit of Work"
+---
+```
+
+Global dictionary entries apply to all slides, and slide-specific `ttsDict` entries override the global mapping for matching `from` values.
+
+#### Disable global dictionary for a slide
+
+To completely disable the global dictionary for a specific slide, set `ttsDict: false`:
+
+```yaml
+---
+layout: center
+ttsDict: false
+---
+```
+
+This slide will not apply any global dictionary entries. If you need slide-specific pronunciations without the global dictionary, combine them:
+
+```yaml
+---
+layout: center
+ttsDict: false
+tts:
+  dictionary:
+    - from: "API"
+      to: "Application Programming Interface"
+---
+```
+
 ### API Key configuration
 
 > Never put API keys in `slides.md`.

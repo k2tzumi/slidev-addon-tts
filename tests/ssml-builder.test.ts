@@ -54,6 +54,41 @@ describe('buildSsml', () => {
     expect(ssml).not.toContain('<b>')
   })
 
+  it('applies dictionary substitutions with <sub> tags', () => {
+    const { ssml } = buildSsml([
+      {
+        page: 1,
+        sections: ['Doctrine の ORM は DataMapper です。'],
+        dictionary: [
+          { from: 'Doctrine', to: 'ドクトリン' },
+          { from: 'ORM', to: 'オーアールエム' },
+          { from: 'DataMapper', to: 'データマッパー' },
+        ],
+      },
+    ])
+
+    expect(ssml).toContain('<sub alias="ドクトリン">Doctrine</sub>')
+    expect(ssml).toContain('<sub alias="オーアールエム">ORM</sub>')
+    expect(ssml).toContain('<sub alias="データマッパー">DataMapper</sub>')
+  })
+
+  it('merges global and slide dictionaries with slide entries overriding global entries', () => {
+    const slides: SlideNote[] = [
+      {
+        page: 1,
+        sections: ['Doctrine と Laravel'],
+        dictionary: [{ from: 'Doctrine', to: 'ドクトリン' }],
+      },
+    ]
+    const globalDictionary = [{ from: 'Doctrine', to: 'ドクトリン(グローバル)' }, { from: 'Laravel', to: 'ララベル' }]
+
+    const { ssml } = buildSsml(slides, '500ms', globalDictionary)
+
+    expect(ssml).toContain('<sub alias="ドクトリン">Doctrine</sub>')
+    expect(ssml).toContain('<sub alias="ララベル">Laravel</sub>')
+    expect(ssml).not.toContain('ドクトリン(グローバル)')
+  })
+
   it('returns the list of page numbers included in the batch', () => {
     const slides: SlideNote[] = [
       { page: 2, sections: ['a'] },
@@ -67,6 +102,45 @@ describe('buildSsml', () => {
     const { ssml } = buildSsml([{ page: 1, sections: ['only section'] }])
     expect(ssml).not.toContain('_click_')
     expect(ssml).toContain('only section')
+  })
+
+  it('disables global dictionary when disableGlobalDict is true', () => {
+    const slides: SlideNote[] = [
+      {
+        page: 1,
+        sections: ['Doctrine と Laravel'],
+        disableGlobalDict: true,
+      },
+    ]
+    const globalDictionary = [{ from: 'Doctrine', to: 'ドクトリン' }, { from: 'Laravel', to: 'ララベル' }]
+
+    const { ssml } = buildSsml(slides, '500ms', globalDictionary)
+
+    // Global dictionary should NOT be applied
+    expect(ssml).toContain('Doctrine')
+    expect(ssml).toContain('Laravel')
+    expect(ssml).not.toContain('<sub alias="ドクトリン">Doctrine</sub>')
+    expect(ssml).not.toContain('<sub alias="ララベル">Laravel</sub>')
+  })
+
+  it('disables global dictionary but applies slide-specific dictionary when disableGlobalDict is true with slide dictionary', () => {
+    const slides: SlideNote[] = [
+      {
+        page: 1,
+        sections: ['Doctrine と Laravel'],
+        dictionary: [{ from: 'Doctrine', to: 'ドクトリン' }],
+        disableGlobalDict: true,
+      },
+    ]
+    const globalDictionary = [{ from: 'Laravel', to: 'ララベル(グローバル)' }]
+
+    const { ssml } = buildSsml(slides, '500ms', globalDictionary)
+
+    // Slide-specific dictionary should be applied
+    expect(ssml).toContain('<sub alias="ドクトリン">Doctrine</sub>')
+    // Global dictionary should NOT be applied
+    expect(ssml).toContain('Laravel')
+    expect(ssml).not.toContain('ララベル')
   })
 
   it('does not insert a break at click boundaries (no audio gap on seek)', () => {

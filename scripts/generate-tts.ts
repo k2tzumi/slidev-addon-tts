@@ -183,7 +183,7 @@ export async function main(): Promise<void> {
   mkdirSync(OUTPUT_DIR, { recursive: true })
 
   const slides = parseSlides(readFileSync(SLIDES_FILE, 'utf-8'))
-  const batches = splitIntoBatches(slides, BREAK_TIME)
+  const batches = splitIntoBatches(slides, BREAK_TIME, undefined, fmConfig.dictionary ?? [])
 
   console.log(`\nSlides: ${slides.length}, batches: ${batches.length}`)
 
@@ -206,7 +206,7 @@ export async function main(): Promise<void> {
 
     console.log(`  🎙 gen:   batch ${i + 1} (${pageRange})`)
 
-    const { ssml } = buildSsml(batchSlides, BREAK_TIME)
+    const { ssml } = buildSsml(batchSlides, BREAK_TIME, fmConfig.dictionary ?? [])
     const { audioContent, timepoints } = await callCloudTTS(ssml, API_KEY, LANG, VOICE)
 
     const wavBuffer = Buffer.from(audioContent, 'base64')
