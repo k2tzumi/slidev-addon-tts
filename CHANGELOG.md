@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.17](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.16...v0.0.17) - 2026-05-31
+- chore: update actions versions in release workflow by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/38
+
 ## [v0.0.16](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.15...v0.0.16) - 2026-05-31
 - Add pronunciation dictionary support for SSML <sub> tags by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/36
 
