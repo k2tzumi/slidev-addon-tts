@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.16](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.15...v0.0.16) - 2026-05-31
+- Add pronunciation dictionary support for SSML <sub> tags by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/36
+
 ## [v0.0.15](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.14...v0.0.15) - 2026-05-10
 - fix: resolve symlink in bin entry guard so npx invocation calls main() by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/33
 
