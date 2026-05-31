@@ -53,6 +53,18 @@ jobs:
               tag: context.payload.inputs.tag
             });
             const packFile = '${{ steps.get-assets-file-name.outputs.packFile }}';
+            
+            // Delete existing asset if it exists
+            const existingAsset = release.data.assets.find(asset => asset.name === packFile);
+            if (existingAsset) {
+              await github.rest.repos.deleteReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                asset_id: existingAsset.id,
+              });
+              core.info(`Deleted existing asset: ${packFile}`);
+            }
+            
             const filePath = path.join(path.resolve(process.env.GITHUB_WORKSPACE), packFile);
             const fileContent = fs.readFileSync(filePath);
             await github.rest.repos.uploadReleaseAsset({
