@@ -13,7 +13,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Check out source code
-        uses: actions/checkout@11bd719899917474d19c331e618be0c4ad6e6a54 # v4.4.0
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - id: tagpr
         name: Run tagpr
@@ -22,7 +22,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trigger release Workflow
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.2.0
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         continue-on-error: true
         if: steps.tagpr.outputs.tag != ''
         with:
