@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.18](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.17...v0.0.18) - 2026-05-31
+- feat: add logic to delete existing release asset before upload by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/40
+
 ## [v0.0.17](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.16...v0.0.17) - 2026-05-31
 - chore: update actions versions in release workflow by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/38
 
