@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.0.19](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.18...v0.0.19) - 2026-10-11
+
+- chore(deps): bump actions/checkout from 6.0.2 to 7.0.1 by @dependabot[bot] in https://github.com/k2tzumi/slidev-addon-tts/pull/43
+- chore(deps): bump actions/deploy-pages from 5.0.0 to 5.0.1 by @dependabot[bot] in https://github.com/k2tzumi/slidev-addon-tts/pull/44
+- chore(deps): bump actions/setup-node from 6.4.0 to 7.1.0 by @dependabot[bot] in https://github.com/k2tzumi/slidev-addon-tts/pull/45
+- chore(deps): bump Songmu/tagpr from 1.19.0 to 1.21.2 by @dependabot[bot] in https://github.com/k2tzumi/slidev-addon-tts/pull/47
+- chore(deps): bump k1LoW/octocov-action from 1.5.1 to 1.5.2 by @dependabot[bot] in https://github.com/k2tzumi/slidev-addon-tts/pull/48
+- chore(deps-dev): bump @types/node from 22.19.17 to 26.6.4 by @dependabot[bot] in https://github.com/k2tzumi/slidev-addon-tts/pull/49
+- chore(deps): bump tsx from 4.21.0 to 4.23.15 by @dependabot[bot] in https://github.com/k2tzumi/slidev-addon-tts/pull/50
+- chore(deps-dev): bump @slidev/cli from 52.15.0 to 53.0.0 by @dependabot[bot] in https://github.com/k2tzumi/slidev-addon-tts/pull/52
+
 ## [v0.0.18](https://github.com/k2tzumi/slidev-addon-tts/compare/v0.0.17...v0.0.18) - 2026-05-31
 - feat: add logic to delete existing release asset before upload by @k2tzumi in https://github.com/k2tzumi/slidev-addon-tts/pull/40
 
